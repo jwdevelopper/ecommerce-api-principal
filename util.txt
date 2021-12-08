@@ -1,0 +1,8 @@
+criar modulo (nest g module nome_modulo);
+cria service (nest g service nome_service --no-spec)
+cria um controller (nest g controller nome_controlador --no-spec)
+inciar em modo de desenvolvimento (npm run start:dev)
+
+continuar a partir do link a baixo  ¬
+                                    V
+https://medium.com/@iago.maiasilva/construindo-uma-api-com-nestjs-postgresql-e-docker-parte-2-autentica%C3%A7%C3%A3o-e-autoriza%C3%A7%C3%A3o-697f77afcc16
