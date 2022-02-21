@@ -7,6 +7,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { CredenciaisDto } from 'src/dtos/credenciais_dto';
+import { BuscarUsuariosQueryDto } from './dto/buscar_usuarios_query_dto';
 
 @EntityRepository(Usuario)
 export class UsuarioRepository extends Repository<Usuario> {
@@ -56,6 +57,41 @@ export class UsuarioRepository extends Repository<Usuario> {
 
     private async hashPassword(senha: string, salt: string): Promise<string>{
         return bcrypt.hash(senha,salt);
+    }
+
+    async buscarUsuarios( queryDto: BuscarUsuariosQueryDto): Promise<{usuarios:Usuario[]; total:number}> {
+        console.log('Dados vindo: ' + JSON.stringify(queryDto));
+        queryDto.status = queryDto.status === undefined ? true : queryDto.status;
+        //queryDto.page = queryDto.page < 1 ? 1 : queryDto.page;
+        queryDto.page = 1;
+        //queryDto.limit = queryDto.limit > 100 ? 100 : queryDto.limit;
+        queryDto.limit = 100;
+
+        const {email,nome,status,role} = queryDto;
+        const query = this.createQueryBuilder('usuario');
+        query.where('usuario.status = :status', {status});
+
+        if(email){
+            query.andWhere('usuario.email ILIKE :email', { email: `%${email}%`});
+        }
+
+        if(nome) {
+            query.andWhere('usuario.nome ILIKE :nome', { nome: `%${nome}%`});
+        }
+
+        if(role) {
+            query.andWhere('usuario.role = :role', { nome });
+        }
+        console.log('Pagina: ' + queryDto.page);
+        console.log('Limite: ' + queryDto.limit);
+        query.skip((queryDto.page - 1) * queryDto.limit);
+        query.take(+queryDto.limit);
+        query.orderBy(queryDto.sort ? JSON.parse(queryDto.sort) : undefined);
+        query.select(['usuario.nome', 'usuario.email', 'usuario.role', 'usuario.status']);
+
+        const [usuarios, total] = await query.getManyAndCount();
+
+        return { usuarios, total };
     }
 
 }
